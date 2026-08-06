@@ -1,0 +1,2 @@
+# Generative AI practice topics
+
