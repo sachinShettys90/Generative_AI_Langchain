@@ -8,27 +8,35 @@ load_dotenv()
 model1 = ChatOpenAI()
 model2 = ChatOpenAI()
 parser = StrOutputParser()
-P1 = PromptTemplate(
-    template="generate the notes for the following text : {text}",
-    input_variables=['text']
+p1 = PromptTemplate(
+    template="generate the notes for the given topic:{topic}",
+    input_variables=['topic']
+)
+p2 = PromptTemplate(
+    template="generate the quiz for the given topic:{topic}",
+    input_variables=['topic']
 )
 
-P2 = PromptTemplate(
-    template="generate the quiz for the following text {text}",
-    input_variables=['text']
-)
-
-P3 = PromptTemplate(
-    template="consolidate the notes and quiz into one document {notes}, {quiz}",
+p3 = PromptTemplate(
+    template="Create a combined document using the following notes and quiz.\n\n"
+    "Notes:\n{notes}\n\n"
+    "Quiz:\n{quiz}\n\n"
+    "The final output should include both a Notes section and a Quiz section.",
     input_variables=['notes', 'quiz']
 )
 
-parallelChain = RunnableParallel({
-    'notes': RunnableSequence(P1, model1, parser),
-    'quiz': RunnableSequence(P2, model1, parser)
+parallelchain = RunnableParallel({
+    'notes': RunnableSequence(p1, model1, parser),
+    'quiz': RunnableSequence(p2, model2, parser)
 })
-sequenceChain = RunnableSequence(P3, model1, parser)
+sequentialchain = RunnableSequence(p3, model2, parser)
+mainchain = RunnableSequence(parallelchain, sequentialchain)
+topic = """Linear regression is a type of supervised machine-learning algorithm that learns from the labelled datasets and maps the data points with most optimized linear functions which can be used for prediction on new datasets. It assumes that there is a linear relationship between the input and output, meaning the output changes at a constant rate as the input changes. This relationship is represented by a straight line.
 
-finalChain = RunnableSequence(parallelChain, sequenceChain)
-result = finalChain.invoke({"text": "Galaxy"})
+For example we want to predict a student's exam score based on how many hours they studied. We observe that as students study more hours, their scores go up. In the example of predicting exam scores based on hours studied. Here
+
+Independent variable (input): Hours studied because it's the factor we control or observe.
+Dependent variable (output): Exam score because it depends on hobw many hours were studied."""
+
+result = mainchain.invoke({'topic': topic})
 print(result)
