@@ -1,2 +1,2 @@
-# Generative AI practice topics
-
+# Generative_AI_Langchain
+DynamicPrompts,Chatbots,StructuredOutputs,OutputParsers,Chains.Runnables
