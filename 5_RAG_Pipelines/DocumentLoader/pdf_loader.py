@@ -8,8 +8,8 @@ load_dotenv()
 model = ChatOpenAI()
 parser = StrOutputParser()
 
-Loader = PyPDFLoader("Job Offer-Infra Automation Scripter - Lead.pdf")
+Loader = PyPDFLoader(
+    r"D:\VSCode_GenerativeAI\5_RAG_Pipelines\DocumentLoader\Job Offer-Infra Automation Scripter - Lead.pdf")
 docs = Loader.load()
 
 print(len(docs))
-

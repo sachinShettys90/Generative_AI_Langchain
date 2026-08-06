@@ -1,6 +1,7 @@
 from langchain_community.document_loaders import csv_loader
 
-loader = csv_loader(file_path='Sample.csv')
+loader = csv_loader(
+    file_path='Sample.txt')
 
 data = loader.load()
 
