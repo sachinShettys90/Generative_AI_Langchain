@@ -24,7 +24,7 @@ docs = loader.load()
 if docs and isinstance(docs[0], str):
     docs = [Document(page_content=d) for d in docs]
 
-string = "Hi this is Sur"
+
 splitters = RecursiveCharacterTextSplitter(
     chunk_size=100,
     chunk_overlap=20,
