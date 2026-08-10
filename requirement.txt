@@ -24,3 +24,11 @@ python-dotenv
 # Machine Learning Utilities
 numpy
 scikit-learn
+
+
+# YouTube RAG specifics
+langchain-community
+youtube-transcript-api
+faiss-cpu
+tiktoken
+requests==2.32.4
