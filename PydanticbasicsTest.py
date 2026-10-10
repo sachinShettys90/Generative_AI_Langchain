@@ -10,17 +10,20 @@ model = ChatOpenAI()
 
 
 class Sentiment(BaseModel):
-    sentiment: Literal['pos', 'neg'] = Field(description="sentimentanalysis")
+    sentiment: Literal['positive', 'negative'] = Field(description="Sentiment")
 
 
-Parser = PydanticOutputParser(pydantic_object=Sentiment)
+parser = PydanticOutputParser(pydantic_object=Sentiment)
 
 prompt = PromptTemplate(
-    template="Generate the sentiment for the given input{input}\n{format_instructions}",
-    input_variables=['input'],
-    partial_variables={'format_instructions': Parser.get_format_instructions()}
+    template="Give me the sentiment for the given input{Input}\n{format_instructions}",
+    input_variables=['Input'],
+    partial_variables={'format_instructions': parser.get_format_instructions()}
 )
 
-chain = prompt | model | Parser
-result = chain.invoke({'input': "I dont like this mobile"})
+
+chain = prompt | model | parser
+
+result = chain.invoke({'Input': "I dont like this mobile"})
+
 print(result)

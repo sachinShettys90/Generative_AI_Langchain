@@ -1,19 +1,34 @@
 from langchain_openai import ChatOpenAI
-from dotenv import load_dotenv
 from langchain_core.prompts import PromptTemplate
-from langchain_core.runnables import RunnableSequence, RunnableParallel, RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough, RunnableSequence, RunnableParallel
 from langchain_core.output_parsers import StrOutputParser, PydanticOutputParser
-from pydantic import BaseModel, EmailStr, Field
-from typing import List, TypedDict, Annotated, Optional, Dict
-
+from dotenv import load_dotenv
+from pydantic import Field, BaseModel
+from typing import Literal, TypedDict, Dict, List
 load_dotenv()
 model = ChatOpenAI()
-
-prompt = PromptTemplate(
-    template="generate a joke for the given input{input}",
-    input_variables=['input']
+parser = StrOutputParser()
+P1 = PromptTemplate(
+    template="Generate the 10 line notes for the given input topic {input_topic}",
+    input_variables=['input_topic']
 )
-template = prompt.invoke({'input': "Galaxy"})
-result = model.invoke(template)
+P2 = PromptTemplate(
+    template="Generate the 5 short questions for the given input{input_topic}",
+    input_variables=['input_topic']
+)
+P3 = PromptTemplate(
+    template="Merge the both notes{notes} and quiz{quiz} , generate the single document ",
+    input_variables=['notes', 'quiz']
+)
 
-print(result.content)
+ParallelChain = RunnableParallel({
+    'notes': RunnableSequence(P1, model, parser),
+    'quiz': RunnableSequence(P2, model, parser)
+})
+
+mergerChain = RunnableSequence(P3, model, parser)
+
+MainChain = RunnableSequence(ParallelChain, mergerChain)
+result = MainChain.invoke({'input_topic': "BlackHole"})
+
+print(result)
