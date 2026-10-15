@@ -1,34 +1,45 @@
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import PromptTemplate
-from langchain_core.runnables import RunnablePassthrough, RunnableSequence, RunnableParallel
-from langchain_core.output_parsers import StrOutputParser, PydanticOutputParser
+
 from dotenv import load_dotenv
-from pydantic import Field, BaseModel
-from typing import Literal, TypedDict, Dict, List
+from langchain_openai import ChatOpenAI
+from langchain_community.document_loaders import TextLoader
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+
+# Load environment variables
 load_dotenv()
-model = ChatOpenAI()
+
+# Initialize model and parser
+model = ChatOpenAI(model="gpt-4o-mini")
 parser = StrOutputParser()
-P1 = PromptTemplate(
-    template="Generate the 10 line notes for the given input topic {input_topic}",
-    input_variables=['input_topic']
+
+# Load document
+loader = TextLoader(
+    r"5_RAG_Pipelines\DocumentLoader\Sample.txt",
+    encoding="utf-8"
 )
-P2 = PromptTemplate(
-    template="Generate the 5 short questions for the given input{input_topic}",
-    input_variables=['input_topic']
-)
-P3 = PromptTemplate(
-    template="Merge the both notes{notes} and quiz{quiz} , generate the single document ",
-    input_variables=['notes', 'quiz']
+docs = loader.load()
+
+# Create prompt
+prompt = PromptTemplate(
+    template="""Answer the following question using the context below.
+
+Context:
+{context}
+
+Question:
+{question}
+
+Answer:""",
+    input_variables=["question", "context"]
 )
 
-ParallelChain = RunnableParallel({
-    'notes': RunnableSequence(P1, model, parser),
-    'quiz': RunnableSequence(P2, model, parser)
+# Build chain
+chain = prompt | model | parser
+
+# Run chain
+result = chain.invoke({
+    "question": "Where is Karnataka situated?",
+    "context": docs[0].page_content
 })
-
-mergerChain = RunnableSequence(P3, model, parser)
-
-MainChain = RunnableSequence(ParallelChain, mergerChain)
-result = MainChain.invoke({'input_topic': "BlackHole"})
 
 print(result)

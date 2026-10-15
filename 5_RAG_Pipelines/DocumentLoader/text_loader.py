@@ -10,7 +10,7 @@ parser = StrOutputParser()
 
 prompt = PromptTemplate(
     template="write 2 line description about the {topic}",
-    input_variables=["poem"]
+    input_variables=["topic"]
 )
 
 
