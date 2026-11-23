@@ -1,20 +1,29 @@
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import PromptTemplate
-from langchain_core.runnables import RunnableSequence, RunnableParallel, RunnablePassthrough
 from langchain_core.output_parsers import PydanticOutputParser
+from langchain_core.runnables import RunnablePassthrough, RunnableSequence
+from langchain_core.prompts import PromptTemplate
 from dotenv import load_dotenv
-from pydantic import Field, BaseModel
-from typing import Literal, TypedDict, Dict, List
+from pydantic import BaseModel, Field
+from typing import TypedDict, Dict, List, Literal
 
 load_dotenv()
 model = ChatOpenAI(model="gpt-4o-mini")
 
 
-template = PromptTemplate(
-    template=''' please generate the joke about the topic: {topic}''',
-    input_variables=['topic']
+class Sentiment(BaseModel):
+    sentiment: Literal['positive', 'negative'] = Field(
+        description="sentiment analysis")
+
+
+structuredModel = model.with_structured_output(Sentiment)
+
+prompt = PromptTemplate(
+    template="find the sentiment for the given statement {statement}",
+    input_variables=['statement']
 )
 
-prompt = template.invoke({'topic': "galaxy"})
-result = model.invoke(prompt)
+template = prompt.invoke({'statement': "i like this mobile"})
+
+result = structuredModel.invoke(template)
+
 print(result)
