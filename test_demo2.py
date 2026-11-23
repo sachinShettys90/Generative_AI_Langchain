@@ -10,19 +10,23 @@ model = ChatOpenAI(model="gpt-4o-mini")
 
 # pydantic output parser
 
+parser = StrOutputParser()
 
-class Sentiment(BaseModel):
-    sentiment: Literal['pos', 'neg'] = Field(description="sentiment analysis")
-
-
-parser = PydanticOutputParser(pydantic_object=Sentiment)
-
-prompt = PromptTemplate(
-    template="Generate the sentiment for the input {input}\n{format_instructions}",
-    input_variables=['input'],
-    partial_variables={'format_instructions': parser.get_format_instructions}
+P1 = PromptTemplate(
+    template="generate the joke for the topic{topic}",
+    input_variables=['topic']
+)
+P2 = PromptTemplate(
+    template="generate the 5 line summary of the topic {topic}",
+    input_variables=['topic']
 )
 
-chain = RunnableSequence(prompt, model, parser)
-result = chain.invoke({'input': "I hate this movie"})
+chain = RunnableParallel(
+    {
+        "joke": RunnableSequence(P1, model, parser),
+        "summary": RunnableSequence(P2, model, parser)
+    }
+)
+
+result = chain.invoke({"topic": "blackhole"})
 print(result)
